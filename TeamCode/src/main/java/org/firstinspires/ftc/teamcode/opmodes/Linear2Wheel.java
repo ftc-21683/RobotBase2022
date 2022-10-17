@@ -52,18 +52,16 @@ import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="4 Wheel OpMode", group="Linear Opmode")
+@TeleOp(name="2 Wheel OpMode", group="Linear Opmode")
 //@Disabled
-public class Linear extends LinearOpMode {
+public class Linear2Wheel extends LinearOpMode {
 
     //Store Logger
     AdditiveLogger logger = new AdditiveLogger(15);
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor backLeftDrive = null;
-    private DcMotor backRightDrive = null;
-    private DcMotor frontLeftDrive = null;
-    private DcMotor frontRightDrive = null;
+    private DcMotor leftDrive = null;
+    private DcMotor rightDrive = null;
 
     @Override
     public void runOpMode() {
@@ -74,18 +72,14 @@ public class Linear extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -115,10 +109,8 @@ public class Linear extends LinearOpMode {
             // rightPower = -gamepad1.right_stick_y ;
 
             // Send calculated power to wheels
-            backLeftDrive.setPower(leftPower);
-            backRightDrive.setPower(rightPower);
-            frontLeftDrive.setPower(leftPower);
-            frontRightDrive.setPower(rightPower);
+            leftDrive.setPower(leftPower);
+            rightDrive.setPower(rightPower);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -132,6 +124,9 @@ public class Linear extends LinearOpMode {
     boolean turbo = false;
     boolean detail = false;
 
+    float detailspeed = 0.2f;
+    float turbospeed = 1f;
+
 
     public float getDriveMod(Gamepad gamepad) {
         //Bumpers will set the mod to 0.1 and 1 ️
@@ -144,7 +139,7 @@ public class Linear extends LinearOpMode {
                 turbo = false;
                 logger.Log("Detail Toggled");
             }
-            return 0.1f;
+            return detailspeed;
         }
         firstL = true;
         if(gamepad.right_bumper) {
@@ -154,13 +149,13 @@ public class Linear extends LinearOpMode {
                 detail = false;
                 logger.Log("Turbo Toggled");
             }
-            return 1f;
+            return turbospeed;
         }
         firstR = true;
         if(turbo)
-            return 1;
+            return turbospeed;
         if(detail)
-            return 0.1f;
+            return detailspeed;
         return 0.5f;
     }
 }
