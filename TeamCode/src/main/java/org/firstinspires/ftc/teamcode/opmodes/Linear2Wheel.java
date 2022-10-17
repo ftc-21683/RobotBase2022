@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.Drivemod;
 
 
 /**
@@ -96,7 +97,7 @@ public class Linear2Wheel extends LinearOpMode {
 
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
-            float mod = getDriveMod(gamepad1);
+            float mod = Drivemod.getDriveMod(gamepad1, logger);
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
 
@@ -118,44 +119,5 @@ public class Linear2Wheel extends LinearOpMode {
             logger.tickLogger(telemetry);
         }
     }
-    boolean firstR = false;
-    boolean firstL = false;
 
-    boolean turbo = false;
-    boolean detail = false;
-
-    float detailspeed = 0.2f;
-    float turbospeed = 1f;
-
-
-    public float getDriveMod(Gamepad gamepad) {
-        //Bumpers will set the mod to 0.1 and 1 ️
-        //triggers will set the mod from .1 - .75 (dist 0.65)
-
-        if(gamepad.left_bumper) {
-            if(firstL) {
-                firstL = false;
-                detail = !detail;
-                turbo = false;
-                logger.Log("Detail Toggled");
-            }
-            return detailspeed;
-        }
-        firstL = true;
-        if(gamepad.right_bumper) {
-            if(firstR) {
-                firstR = false;
-                turbo = !turbo;
-                detail = false;
-                logger.Log("Turbo Toggled");
-            }
-            return turbospeed;
-        }
-        firstR = true;
-        if(turbo)
-            return turbospeed;
-        if(detail)
-            return detailspeed;
-        return 0.5f;
-    }
 }

@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.Drivemod;
 
 
 /**
@@ -93,26 +94,13 @@ public class Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-            float mod = getDriveMod(gamepad1);
+            float mod = Drivemod.getDriveMod(gamepad1, logger);
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
 
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0);
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0);
-
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
+            //Calculate Power
+            double leftPower    = Range.clip(drive + turn, -1.0, 1.0);
+            double rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
             // Send calculated power to wheels
             backLeftDrive.setPower(leftPower);
@@ -125,42 +113,5 @@ public class Linear extends LinearOpMode {
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             logger.tickLogger(telemetry);
         }
-    }
-    boolean firstR = false;
-    boolean firstL = false;
-
-    boolean turbo = false;
-    boolean detail = false;
-
-
-    public float getDriveMod(Gamepad gamepad) {
-        //Bumpers will set the mod to 0.1 and 1 ️
-        //triggers will set the mod from .1 - .75 (dist 0.65)
-
-        if(gamepad.left_bumper) {
-            if(firstL) {
-                firstL = false;
-                detail = !detail;
-                turbo = false;
-                logger.Log("Detail Toggled");
-            }
-            return 0.1f;
-        }
-        firstL = true;
-        if(gamepad.right_bumper) {
-            if(firstR) {
-                firstR = false;
-                turbo = !turbo;
-                detail = false;
-                logger.Log("Turbo Toggled");
-            }
-            return 1f;
-        }
-        firstR = true;
-        if(turbo)
-            return 1;
-        if(detail)
-            return 0.1f;
-        return 0.5f;
     }
 }
