@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 
 
 /**
@@ -69,22 +70,22 @@ public class Linear2Wheel extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        //Preprogrammed Locations:
+        //High Cone is 2421
+        //Med Cone is 1392
+        //Low Cone is 0
+        ValueBounce bounce = new ValueBounce(2421, 1392, 0);
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         logger.Log("Initialized");
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+
         leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
         leftArm = hardwareMap.get(DcMotor.class, "left_arm");
         //rightArm = hardwareMap.get(DcMotor.class, "right_arm");
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
@@ -92,39 +93,22 @@ public class Linear2Wheel extends LinearOpMode {
 
         leftArm.setDirection(DcMotor.Direction.REVERSE);
         leftArm.setTargetPosition(0);
-        int leftArmHeight = 0;
+        int armHeight = 0;
         int leftArmHeightMax = 3625;
 
         //rightArm.setDirection(DcMotor.Direction.FORWARD);
 
-        // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
 
-            double leftArmPower;
-            double rightArmPower;
 
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
             float mod = getDriveMod(gamepad1);
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
-
-            /**
-             * Replace motors with server (motors cringe)
-             * Implement 4 step system for arms (Bottom, Small, Medium, Tall)
-             * Manual control that is clamped for maximum height so we don't beak it
-             * **/
 
             leftPower    = Range.clip(drive + turn, -1.0, 1.0);
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
@@ -144,32 +128,28 @@ public class Linear2Wheel extends LinearOpMode {
             logger.tickLogger(telemetry);
 
             // Arm stuff
-
             if(gamepad1.dpad_up){
-                if(leftArmHeight < leftArmHeightMax){
-
-                    leftArmHeight++;
-                    leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                if(armHeight < leftArmHeightMax){
+                    armHeight++;
                     leftArm.setPower(armSpeed);
-                    leftArm.setTargetPosition(leftArmHeight);
-
-                    logger.Log("up" + leftArmHeight);
 
                 }
-
             }
             if(gamepad1.dpad_down){
-
-                if(leftArmHeight > 0){
-                    leftArmHeight--;
-                    leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                if(armHeight > 0){
+                    armHeight--;
                     leftArm.setPower(-armSpeed);
-                    leftArm.setTargetPosition(leftArmHeight);
-
-                    logger.Log("down" + leftArmHeight);
                 }
-
             }
+            logger.Log("pos: " + armHeight);
+            leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftArm.setTargetPosition(armHeight);
+
+            if(gamepad1.right_trigger > 0.8) {
+                leftArm.setPower(1);
+                leftArm.setTargetPosition(bounce.advance());
+            }
+
 
             if(gamepad1.dpad_left){
 
@@ -180,13 +160,11 @@ public class Linear2Wheel extends LinearOpMode {
                 }
 
             }else if(gamepad1.dpad_right){
-
                 if(armSpeed > 0){
 
                     armSpeed-= 0.1;
 
                 }
-
             }
         }
     }
