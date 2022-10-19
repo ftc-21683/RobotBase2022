@@ -42,16 +42,8 @@ import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 
 
 /**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ * @author Rudy
+ * @author Nicholas
  */
 
 @TeleOp(name="2 Wheel OpMode", group="Linear Opmode")
@@ -61,11 +53,8 @@ public class Linear2Wheel extends LinearOpMode {
     //Store Logger
     AdditiveLogger logger = new AdditiveLogger(15);
     // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    private final ElapsedTime runtime = new ElapsedTime();
 
-    private DcMotor leftArm = null;
     //private DcMotor rightArm = null;
 
     @Override
@@ -76,27 +65,34 @@ public class Linear2Wheel extends LinearOpMode {
         //Low Cone is 0
         ValueBounce bounce = new ValueBounce(2421, 1392, 0);
 
+        // --- Send Initialized Status
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         logger.Log("Initialized");
 
-        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        // --- Register Drive Motors
+        DcMotor leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
+        DcMotor rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
-        leftArm = hardwareMap.get(DcMotor.class, "left_arm");
+        // --- Register Arm Motors
+        DcMotor leftArm = hardwareMap.get(DcMotor.class, "left_arm");
         //rightArm = hardwareMap.get(DcMotor.class, "right_arm");
 
+        // --- Set Motor Directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        double armSpeed = 0.5;
-
         leftArm.setDirection(DcMotor.Direction.REVERSE);
-        leftArm.setTargetPosition(0);
-        int armHeight = 0;
-        int leftArmHeightMax = 3625;
-
         //rightArm.setDirection(DcMotor.Direction.FORWARD);
+
+        // --- Set Default Target Positions
+        leftArm.setTargetPosition(0);
+        //rightArm.setTargetPosition(0);
+
+        // --- Set Default Speed
+        double armSpeed = 0.5;
+        int armHeight = 0;
+        int maxArmHeight = 3625;
+
 
         waitForStart();
         runtime.reset();
@@ -105,34 +101,25 @@ public class Linear2Wheel extends LinearOpMode {
             double leftPower;
             double rightPower;
 
-
+            // --- Get the modifier
             float mod = getDriveMod(gamepad1);
+
+            // --- Get Input Data for drive
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
 
             leftPower    = Range.clip(drive + turn, -1.0, 1.0);
             rightPower   = Range.clip(drive - turn, -1.0, 1.0);
 
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
-
-            // Send calculated power to wheels
+            // --- Send calculated power to wheels
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            logger.tickLogger(telemetry);
-
-            // Arm stuff
+            // --- Get Input for arms
             if(gamepad1.dpad_up){
-                if(armHeight < leftArmHeightMax){
+                if(armHeight < maxArmHeight){
                     armHeight++;
                     leftArm.setPower(armSpeed);
-
                 }
             }
             if(gamepad1.dpad_down){
@@ -141,16 +128,16 @@ public class Linear2Wheel extends LinearOpMode {
                     leftArm.setPower(-armSpeed);
                 }
             }
-            logger.Log("pos: " + armHeight);
             leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftArm.setTargetPosition(armHeight);
 
+            // --- Set Position Levels
             if(gamepad1.right_trigger > 0.8) {
                 leftArm.setPower(1);
                 leftArm.setTargetPosition(bounce.advance());
             }
 
-
+            // --- Experimental Arm Speed Control
             if(gamepad1.dpad_left){
 
                 if(armSpeed < 1){
@@ -166,6 +153,12 @@ public class Linear2Wheel extends LinearOpMode {
 
                 }
             }
+
+            logger.Log("pos: " + armHeight);
+            // -- Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+            logger.tickLogger(telemetry);
         }
     }
     boolean firstR = false;
