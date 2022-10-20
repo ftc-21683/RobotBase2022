@@ -76,17 +76,17 @@ public class Linear2Wheel extends LinearOpMode {
 
         // --- Register Arm Motors
         DcMotor leftArm = hardwareMap.get(DcMotor.class, "left_arm");
-        //rightArm = hardwareMap.get(DcMotor.class, "right_arm");
+        DcMotor rightArm = hardwareMap.get(DcMotor.class, "right_arm");
 
         // --- Set Motor Directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
-        //rightArm.setDirection(DcMotor.Direction.FORWARD);
+        rightArm.setDirection(DcMotor.Direction.REVERSE);
 
         // --- Set Default Target Positions
         leftArm.setTargetPosition(0);
-        //rightArm.setTargetPosition(0);
+        rightArm.setTargetPosition(0);
 
         // --- Set Default Speed
         double armSpeed = 0.5;
@@ -130,6 +130,8 @@ public class Linear2Wheel extends LinearOpMode {
             }
             leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftArm.setTargetPosition(armHeight);
+            rightArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightArm.setTargetPosition(armHeight);
 
             // --- Set Position Levels
             if(gamepad1.right_trigger > 0.8) {
