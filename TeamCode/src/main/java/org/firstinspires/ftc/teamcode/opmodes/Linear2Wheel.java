@@ -32,12 +32,13 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
+import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 
 
@@ -55,6 +56,8 @@ public class Linear2Wheel extends LinearOpMode {
     // Declare OpMode members.
     private final ElapsedTime runtime = new ElapsedTime();
 
+    ToggleModifier driveMod = new ToggleModifier(0.2f, 1);
+    ToggleModifier grabMod = new ToggleModifier(0.001f, 0.006f, 0.0005f);
     //private DcMotor rightArm = null;
 
     @Override
@@ -64,6 +67,9 @@ public class Linear2Wheel extends LinearOpMode {
         //Med Cone is 1392
         //Low Cone is 0
         ValueBounce bounce = new ValueBounce(2421, 1392, 0);
+
+        // --- Add Controller Interfaces
+        ControllerInterface interface2 = new ControllerInterface(gamepad2);
 
         // --- Send Initialized Status
         telemetry.addData("Status", "Initialized");
@@ -78,11 +84,17 @@ public class Linear2Wheel extends LinearOpMode {
         DcMotor leftArm = hardwareMap.get(DcMotor.class, "left_arm");
         DcMotor rightArm = hardwareMap.get(DcMotor.class, "right_arm");
 
+        // --- Register Grab Servos
+        Servo leftGrab = hardwareMap.get(Servo.class, "left_grab");
+        Servo rightGrab = hardwareMap.get(Servo.class, "right_grab");
+
         // --- Set Motor Directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
         rightArm.setDirection(DcMotor.Direction.REVERSE);
+        leftGrab.setDirection(Servo.Direction.FORWARD);
+        rightGrab.setDirection(Servo.Direction.FORWARD);
 
         // --- Set Default Target Positions
         leftArm.setTargetPosition(0);
@@ -92,24 +104,28 @@ public class Linear2Wheel extends LinearOpMode {
         double armSpeed = 0.5;
         int armHeight = 0;
         int maxArmHeight = 3625;
+        // -- Set Default Servo Positions
+        double leftGrabPosition = 0;
+        double rightGrabPosition = 0;
 
 
         waitForStart();
         runtime.reset();
 
         while (opModeIsActive()) {
+            interface2.tick();
             double leftPower;
             double rightPower;
 
             // --- Get the modifier
-            float mod = getDriveMod(gamepad1);
+            float mod = driveMod.getModifier(gamepad1, logger);
 
             // --- Get Input Data for drive
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
 
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0);
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0);
+            leftPower    = Range.clip(drive + turn, 0, 1.0);
+            rightPower   = Range.clip(drive - turn, 0, 1.0);
 
             // --- Send calculated power to wheels
             leftDrive.setPower(leftPower);
@@ -161,51 +177,21 @@ public class Linear2Wheel extends LinearOpMode {
                 }
             }
 
-            logger.Log("pos: " + armHeight);
+            // --- Grab Controllers
+            leftGrabPosition += gamepad2.left_stick_x * grabMod.getModifier(gamepad2, logger);
+            leftGrabPosition = Range.clip(leftGrabPosition, 0, 0.65);
+
+            rightGrabPosition += gamepad2.right_stick_x * grabMod.getModifier(gamepad2, logger);
+            rightGrabPosition = Range.clip(rightGrabPosition, 0, 0.65);
+
+            leftGrab.setPosition(leftGrabPosition);
+            rightGrab.setPosition(rightGrabPosition);
+
+
             // -- Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             logger.tickLogger(telemetry);
         }
-    }
-    boolean firstR = false;
-    boolean firstL = false;
-
-    boolean turbo = false;
-    boolean detail = false;
-
-    float detailspeed = 0.2f;
-    float turbospeed = 1f;
-
-
-    public float getDriveMod(Gamepad gamepad) {
-        //Bumpers will set the mod to 0.1 and 1 ️
-        //triggers will set the mod from .1 - .75 (dist 0.65)
-
-        if(gamepad.left_bumper) {
-            if(firstL) {
-                firstL = false;
-                detail = !detail;
-                turbo = false;
-                logger.Log("Detail Toggled");
-            }
-            return detailspeed;
-        }
-        firstL = true;
-        if(gamepad.right_bumper) {
-            if(firstR) {
-                firstR = false;
-                turbo = !turbo;
-                detail = false;
-                logger.Log("Turbo Toggled");
-            }
-            return turbospeed;
-        }
-        firstR = true;
-        if(turbo)
-            return turbospeed;
-        if(detail)
-            return detailspeed;
-        return 0.5f;
     }
 }
