@@ -42,8 +42,8 @@ import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 
 
 /**
- * @author Rudy
- * @author Nicholas
+ * @author Rudy Soliz
+ * @author Nicholas Vettor
  */
 
 @TeleOp(name="2 Wheel OpMode", group="Linear Opmode")
@@ -76,17 +76,17 @@ public class Linear2Wheel extends LinearOpMode {
 
         // --- Register Arm Motors
         DcMotor leftArm = hardwareMap.get(DcMotor.class, "left_arm");
-        //rightArm = hardwareMap.get(DcMotor.class, "right_arm");
+        DcMotor rightArm = hardwareMap.get(DcMotor.class, "right_arm");
 
         // --- Set Motor Directions
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
-        //rightArm.setDirection(DcMotor.Direction.FORWARD);
+        rightArm.setDirection(DcMotor.Direction.REVERSE);
 
         // --- Set Default Target Positions
         leftArm.setTargetPosition(0);
-        //rightArm.setTargetPosition(0);
+        rightArm.setTargetPosition(0);
 
         // --- Set Default Speed
         double armSpeed = 0.5;
@@ -116,29 +116,35 @@ public class Linear2Wheel extends LinearOpMode {
             rightDrive.setPower(rightPower);
 
             // --- Get Input for arms
-            if(gamepad1.dpad_up){
+            if(gamepad2.dpad_up){
                 if(armHeight < maxArmHeight){
                     armHeight++;
                     leftArm.setPower(armSpeed);
+                    rightArm.setPower(armSpeed);
                 }
             }
-            if(gamepad1.dpad_down){
+            if(gamepad2.dpad_down){
                 if(armHeight > 0){
                     armHeight--;
                     leftArm.setPower(-armSpeed);
+                    rightArm.setPower(-armSpeed);
                 }
             }
             leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             leftArm.setTargetPosition(armHeight);
+            rightArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightArm.setTargetPosition(armHeight);
 
             // --- Set Position Levels
-            if(gamepad1.right_trigger > 0.8) {
+            if(gamepad2.right_trigger > 0.8) {
                 leftArm.setPower(1);
                 leftArm.setTargetPosition(bounce.advance());
+                rightArm.setPower(1);
+                rightArm.setTargetPosition(bounce.advance());
             }
 
             // --- Experimental Arm Speed Control
-            if(gamepad1.dpad_left){
+            if(gamepad2.dpad_left){
 
                 if(armSpeed < 1){
 
@@ -146,7 +152,8 @@ public class Linear2Wheel extends LinearOpMode {
 
                 }
 
-            }else if(gamepad1.dpad_right){
+
+            }else if(gamepad2.dpad_right){
                 if(armSpeed > 0){
 
                     armSpeed-= 0.1;
