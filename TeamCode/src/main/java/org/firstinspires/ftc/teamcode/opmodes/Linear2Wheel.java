@@ -66,7 +66,7 @@ public class Linear2Wheel extends LinearOpMode {
         //High Cone is 2421
         //Med Cone is 1392
         //Low Cone is 0
-        ValueBounce bounce = new ValueBounce(2421, 1392, 0);
+        ValueBounce bounce = new ValueBounce(2818, 1392, 0);
 
         // --- Add Controller Interfaces
         ControllerInterface interface2 = new ControllerInterface(gamepad2);
@@ -93,7 +93,7 @@ public class Linear2Wheel extends LinearOpMode {
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
         rightArm.setDirection(DcMotor.Direction.REVERSE);
-        leftGrab.setDirection(Servo.Direction.FORWARD);
+        leftGrab.setDirection(Servo.Direction.REVERSE);
         rightGrab.setDirection(Servo.Direction.FORWARD);
 
         // --- Set Default Target Positions
@@ -103,7 +103,7 @@ public class Linear2Wheel extends LinearOpMode {
         // --- Set Default Speed
         double armSpeed = 0.5;
         int armHeight = 0;
-        int maxArmHeight = 3625;
+        int maxArmHeight = 2818;
         // -- Set Default Servo Positions
         double leftGrabPosition = 0;
         double rightGrabPosition = 0;
@@ -124,8 +124,8 @@ public class Linear2Wheel extends LinearOpMode {
             double drive = -gamepad1.left_stick_y * mod;
             double turn  =  gamepad1.left_stick_x * mod;
 
-            leftPower    = Range.clip(drive + turn, 0, 1.0);
-            rightPower   = Range.clip(drive - turn, 0, 1.0);
+            leftPower    = Range.clip(drive + turn, -1, 1.0);
+            rightPower   = Range.clip(drive - turn, -1, 1.0);
 
             // --- Send calculated power to wheels
             leftDrive.setPower(leftPower);
@@ -153,10 +153,9 @@ public class Linear2Wheel extends LinearOpMode {
 
             // --- Set Position Levels
             if(gamepad2.right_trigger > 0.8) {
-                leftArm.setPower(1);
-                leftArm.setTargetPosition(bounce.advance());
-                rightArm.setPower(1);
-                rightArm.setTargetPosition(bounce.advance());
+                int pos = bounce.advance();
+                leftArm.setTargetPosition(pos);
+                rightArm.setTargetPosition(pos);
             }
 
             // --- Experimental Arm Speed Control
@@ -178,10 +177,10 @@ public class Linear2Wheel extends LinearOpMode {
             }
 
             // --- Grab Controllers
-            leftGrabPosition += gamepad2.left_stick_x * grabMod.getModifier(gamepad2, logger);
+            leftGrabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);
             leftGrabPosition = Range.clip(leftGrabPosition, 0, 0.65);
 
-            rightGrabPosition += gamepad2.right_stick_x * grabMod.getModifier(gamepad2, logger);
+            rightGrabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);
             rightGrabPosition = Range.clip(rightGrabPosition, 0, 0.65);
 
             leftGrab.setPosition(leftGrabPosition);
@@ -189,6 +188,8 @@ public class Linear2Wheel extends LinearOpMode {
 
 
             // -- Show the elapsed game time and wheel power.
+            telemetry.addData("Armheight", armHeight);
+            telemetry.addData("servoMotion", "(" + leftGrabPosition + ", " +rightGrabPosition + ")");
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             logger.tickLogger(telemetry);
