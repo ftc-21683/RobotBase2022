@@ -33,7 +33,7 @@ public class ToggleModifier {
                 firstL = false;
                 detail = !detail;
                 turbo = false;
-                logger.Log("Detail Toggled");
+                logger.Log((gamepad.id == 1004 ? "C1" : "C2") + ": Detail Toggled");
             }
             return detailSpeed;
         }
@@ -43,7 +43,7 @@ public class ToggleModifier {
                 firstR = false;
                 turbo = !turbo;
                 detail = false;
-                logger.Log("Turbo Toggled");
+                logger.Log((gamepad.id == 1004 ? "C1" : "C2") + ": Turbo Toggled");
             }
             return turboSpeed;
         }

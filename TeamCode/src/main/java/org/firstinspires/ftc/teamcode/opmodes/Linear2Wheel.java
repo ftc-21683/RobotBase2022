@@ -52,7 +52,7 @@ import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 public class Linear2Wheel extends LinearOpMode {
 
     //Store Logger
-    AdditiveLogger logger = new AdditiveLogger(15);
+    AdditiveLogger logger = new AdditiveLogger(10);
     // Declare OpMode members.
     private final ElapsedTime runtime = new ElapsedTime();
 
@@ -67,6 +67,7 @@ public class Linear2Wheel extends LinearOpMode {
         //Med Cone is 1392
         //Low Cone is 0
         ValueBounce bounce = new ValueBounce(2818, 1392, 0);
+
 
         // --- Add Controller Interfaces
         ControllerInterface interface2 = new ControllerInterface(gamepad2);
