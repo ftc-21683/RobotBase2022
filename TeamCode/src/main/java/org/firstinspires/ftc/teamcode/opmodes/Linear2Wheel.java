@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -90,8 +91,8 @@ public class Linear2Wheel extends LinearOpMode {
         Servo rightGrab = hardwareMap.get(Servo.class, "right_grab");
 
         // --- Set Motor Directions
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftArm.setDirection(DcMotor.Direction.REVERSE);
         rightArm.setDirection(DcMotor.Direction.REVERSE);
         leftGrab.setDirection(Servo.Direction.REVERSE);
@@ -104,7 +105,7 @@ public class Linear2Wheel extends LinearOpMode {
         // --- Set Default Speed
         double armSpeed = 0.5;
         int armHeight = 0;
-        int maxArmHeight = 2818;
+        int maxArmHeight = 4206; // 2818
         // -- Set Default Servo Positions
         double leftGrabPosition = 0;
         double rightGrabPosition = 0;
