@@ -54,8 +54,8 @@ import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 public class Linear2Wheel extends LinearOpMode {
     public static Linear2Wheel active2Wheel;
 
-    double armSpeed = 0.5;
-    boolean inverted_turn = true;
+    static double armSpeed = 0.5;
+    static boolean inverted_turn = false;
 
     //Store Logger
     AdditiveLogger logger = new AdditiveLogger(10);
@@ -78,6 +78,7 @@ public class Linear2Wheel extends LinearOpMode {
 
         // --- Add Controller Interfaces
         ControllerInterface interface2 = new ControllerInterface(gamepad2);
+        ControllerInterface interface1 = new ControllerInterface(gamepad1);
         interface2.logger = logger;
 
         // --- Send Initialized Status
@@ -129,7 +130,7 @@ public class Linear2Wheel extends LinearOpMode {
             float mod = driveMod.getModifier(gamepad1, logger);
 
             // --- Get Input Data for drive
-            double drive = -gamepad1.left_stick_y * mod;
+            double drive = gamepad1.left_stick_y * mod;
             double turn = (inverted_turn ? 1 : -1) * gamepad1.left_stick_x * mod;
 
             leftPower = Range.clip(drive + turn, -1, 1.0);
@@ -168,15 +169,16 @@ public class Linear2Wheel extends LinearOpMode {
 
             // --- Experimental Arm Speed Control
             interface2.events.add(new ButtonEvent(GamepadButton.Y, () -> {
-                Linear2Wheel.active2Wheel.armSpeed += 0.1;
+                Linear2Wheel.armSpeed += 0.1;
             }));
             interface2.events.add(new ButtonEvent(GamepadButton.A, () -> {
-                Linear2Wheel.active2Wheel.armSpeed -= 0.1;
+                Linear2Wheel.armSpeed -= 0.1;
             }));
 
             // --- Experimental Drive Inversion
-            interface2.events.add(new ButtonEvent(GamepadButton.X, () -> {
-                Linear2Wheel.active2Wheel.inverted_turn = !Linear2Wheel.active2Wheel.inverted_turn;
+            interface1.events.add(new ButtonEvent(GamepadButton.X, () -> {
+                logger.Log("inverted");
+                Linear2Wheel.inverted_turn = !Linear2Wheel.inverted_turn;
             }));
 
 
