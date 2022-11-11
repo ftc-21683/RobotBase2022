@@ -50,8 +50,11 @@ public class ControllerInterface {
         if(gamepad.x) {
             if(onPressX) {
                 for(ButtonEvent event : events) {
-                    if(event.button == GamepadButton.X)
+                    if(event.button == GamepadButton.X) {
+                        logger.Log("Event Fired");
                         event.eventFunction.onPress();
+                    }
+
                 }
                 onPressX = false;
             }

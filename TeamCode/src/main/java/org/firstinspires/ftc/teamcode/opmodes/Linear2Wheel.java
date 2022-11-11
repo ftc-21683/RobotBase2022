@@ -111,9 +111,11 @@ public class Linear2Wheel extends LinearOpMode {
         leftArm.setTargetPosition(0);
         rightArm.setTargetPosition(0);
 
+
+
         // --- Set Default Speed
         int armHeight = 0;
-        int maxArmHeight = 4206; // 2818
+        int maxArmHeight = 3600; // 4206 // 2818
         // -- Set Default Servo Positions
         double leftGrabPosition = 0;
         double rightGrabPosition = 0;
@@ -182,7 +184,6 @@ public class Linear2Wheel extends LinearOpMode {
                 Linear2Wheel.inverted_turn = !Linear2Wheel.inverted_turn;
             }));
 
-
             // --- Grab Controllers
             leftGrabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);
             leftGrabPosition = Range.clip(leftGrabPosition, 0, 0.65);
@@ -192,7 +193,6 @@ public class Linear2Wheel extends LinearOpMode {
 
             leftGrab.setPosition(leftGrabPosition);
             rightGrab.setPosition(rightGrabPosition);
-
 
             // -- Show the elapsed game time and wheel power.
             telemetry.addData("Armheight", armHeight);
