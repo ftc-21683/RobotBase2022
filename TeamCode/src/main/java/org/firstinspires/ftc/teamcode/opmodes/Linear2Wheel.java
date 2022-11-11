@@ -38,7 +38,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.ButtonEvent;
 import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
+import org.firstinspires.ftc.teamcode.utils.GamepadButton;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 
@@ -51,6 +53,10 @@ import org.firstinspires.ftc.teamcode.utils.ValueBounce;
 @TeleOp(name="2 Wheel OpMode", group="Linear Opmode")
 //@Disabled
 public class Linear2Wheel extends LinearOpMode {
+    public static Linear2Wheel active2Wheel;
+
+    static double armSpeed = 0.5;
+    static boolean inverted_turn = false;
 
     //Store Logger
     AdditiveLogger logger = new AdditiveLogger(10);
@@ -63,6 +69,7 @@ public class Linear2Wheel extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        active2Wheel = this;
         //Preprogrammed Locations:
         //High Cone is 2421
         //Med Cone is 1392
@@ -72,6 +79,8 @@ public class Linear2Wheel extends LinearOpMode {
 
         // --- Add Controller Interfaces
         ControllerInterface interface2 = new ControllerInterface(gamepad2);
+        ControllerInterface interface1 = new ControllerInterface(gamepad1);
+        interface2.logger = logger;
 
         // --- Send Initialized Status
         telemetry.addData("Status", "Initialized");
@@ -103,7 +112,6 @@ public class Linear2Wheel extends LinearOpMode {
         rightArm.setTargetPosition(0);
 
         // --- Set Default Speed
-        double armSpeed = 0.5;
         int armHeight = 0;
         int maxArmHeight = 4206; // 2818
         // -- Set Default Servo Positions
@@ -123,11 +131,11 @@ public class Linear2Wheel extends LinearOpMode {
             float mod = driveMod.getModifier(gamepad1, logger);
 
             // --- Get Input Data for drive
-            double drive = -gamepad1.left_stick_y * mod;
-            double turn  =  gamepad1.left_stick_x * mod;
+            double drive = gamepad1.left_stick_y * mod;
+            double turn = (inverted_turn ? 1 : -1) * gamepad1.left_stick_x * mod;
 
-            leftPower    = Range.clip(drive + turn, -1, 1.0);
-            rightPower   = Range.clip(drive - turn, -1, 1.0);
+            leftPower = Range.clip(drive + turn, -1, 1.0);
+            rightPower = Range.clip(drive - turn, -1, 1.0);
 
             // --- Send calculated power to wheels
             leftDrive.setPower(leftPower);
@@ -136,16 +144,16 @@ public class Linear2Wheel extends LinearOpMode {
             // --- Get Input for arms
             if(gamepad2.dpad_up){
                 if(armHeight < maxArmHeight){
-                    armHeight++;
+                    armHeight += 3;
                     leftArm.setPower(armSpeed);
                     rightArm.setPower(armSpeed);
                 }
             }
             if(gamepad2.dpad_down){
                 if(armHeight > 0){
-                    armHeight--;
-                    leftArm.setPower(-armSpeed);
-                    rightArm.setPower(-armSpeed);
+                    armHeight -= 2;
+                    leftArm.setPower(-armSpeed * 0.75);
+                    rightArm.setPower(-armSpeed * 0.75);
                 }
             }
             leftArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -161,22 +169,19 @@ public class Linear2Wheel extends LinearOpMode {
             }
 
             // --- Experimental Arm Speed Control
-            if(gamepad2.dpad_left){
+            interface2.events.add(new ButtonEvent(GamepadButton.Y, () -> {
+                Linear2Wheel.armSpeed += 0.1;
+            }));
+            interface2.events.add(new ButtonEvent(GamepadButton.A, () -> {
+                Linear2Wheel.armSpeed -= 0.1;
+            }));
 
-                if(armSpeed < 1){
+            // --- Experimental Drive Inversion
+            interface1.events.add(new ButtonEvent(GamepadButton.X, () -> {
+                logger.Log("inverted");
+                Linear2Wheel.inverted_turn = !Linear2Wheel.inverted_turn;
+            }));
 
-                    armSpeed+= 0.1;
-
-                }
-
-
-            }else if(gamepad2.dpad_right){
-                if(armSpeed > 0){
-
-                    armSpeed-= 0.1;
-
-                }
-            }
 
             // --- Grab Controllers
             leftGrabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);

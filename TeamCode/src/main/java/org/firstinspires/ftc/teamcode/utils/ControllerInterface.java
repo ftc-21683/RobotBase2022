@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import java.util.ArrayList;
+
 public class ControllerInterface {
     Gamepad gamepad;
     // -- Face Buttons
@@ -12,6 +14,8 @@ public class ControllerInterface {
     // -- L&R Bumpers
     boolean onPressLB = false;
     boolean onPressRB = false;
+    public AdditiveLogger logger;
+    public ArrayList<ButtonEvent> events = new ArrayList<>();
 
 
     public ControllerInterface(Gamepad gamepad) {
@@ -20,25 +24,49 @@ public class ControllerInterface {
 
     public void tick() {
         if(gamepad.a) {
-            if(onPressA) {onPressA = false;}
+            if(onPressA) {
+                onPressA = false;
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.A)
+                        event.eventFunction.onPress();
+                }
+            }
         }else{
             onPressA = true;
         }
 
         if(gamepad.b) {
-            if(onPressB) {onPressB = false;}
+            if(onPressB) {
+                onPressB = false;
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.B)
+                        event.eventFunction.onPress();
+                }
+            }
         }else{
             onPressB = true;
         }
 
         if(gamepad.x) {
-            if(onPressX) {onPressX = false;}
+            if(onPressX) {
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.X)
+                        event.eventFunction.onPress();
+                }
+                onPressX = false;
+            }
         }else{
             onPressX = true;
         }
 
         if(gamepad.y) {
-            if(onPressY) {onPressY = false;}
+            if(onPressY) {
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.B)
+                        event.eventFunction.onPress();
+                }
+                onPressY = false;
+            }
         }else{
             onPressY = true;
         }
@@ -46,19 +74,33 @@ public class ControllerInterface {
 
 
         if(gamepad.right_bumper) {
-            if(onPressRB) {onPressRB = false;}
+            if(onPressRB) {
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.RB)
+                        event.eventFunction.onPress();
+                }
+                onPressRB = false;
+            }
         }else{
             onPressRB = true;
         }
 
         if(gamepad.left_bumper) {
-            if(onPressLB) {onPressLB = false;}
+            if(onPressLB) {
+                for(ButtonEvent event : events) {
+                    if(event.button == GamepadButton.LB)
+                        event.eventFunction.onPress();
+                }
+                onPressLB = false;
+            }
         }else{
             onPressLB = true;
         }
     }
 
-    public boolean onAPress() {
+
+
+    /*public boolean onAPress() {
         if(gamepad.a) {
             return onPressA;
         }else{
@@ -104,5 +146,5 @@ public class ControllerInterface {
         }else{
             return false;
         }
-    }
+    }*/
 }
