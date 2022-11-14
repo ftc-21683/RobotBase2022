@@ -15,8 +15,9 @@ import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
 @TeleOp(name="MecanumTest", group="Mecanum")
 public class MecanumTest extends OpMode {
-    private final int MAX_ARM_HEIGHT = 3300;
-    private final double MAX_GRAB_DIST = 0.0692;
+    private int MAX_ARM_HEIGHT = 4000;
+    private int MIN_ARM_HEIGHT = 0;
+    public static final double MAX_GRAB_DIST = 0.0692;
     private DcMotor front_left  = null;
     private DcMotor front_right = null;
     private DcMotor back_left   = null;
@@ -57,13 +58,14 @@ public class MecanumTest extends OpMode {
         // --- Set Custom stuff
         grabMod     = new ToggleModifier(0.001f, 0.006f, 0.0005f);
         logger      = new AdditiveLogger(15);
-        gp1ci       = new ControllerInterface(gamepad1);
-        gp2ci       = new ControllerInterface(gamepad2);
+        gp1ci       = new ControllerInterface(gamepad1, logger);
+        gp2ci       = new ControllerInterface(gamepad2, logger);
     }
 
     @Override
     public void loop() {
         gp1ci.tick();
+        gp2ci.tick();
         // --------- Control Area
 
         //Drive
@@ -75,7 +77,7 @@ public class MecanumTest extends OpMode {
         if (gamepad2.dpad_up && armHeight < MAX_ARM_HEIGHT) {
             armHeight += 3;
         }
-        if (gamepad2.dpad_down && armHeight > 0) {
+        if (gamepad2.dpad_down && armHeight > MIN_ARM_HEIGHT) {
             armHeight -= 2;
         }
 
@@ -84,6 +86,18 @@ public class MecanumTest extends OpMode {
                 MecanumTest.grabPosition = 0;
             }else {
                 MecanumTest.grabPosition = MAX_GRAB_DIST;
+            }
+        }));
+
+        gp2ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
+            if(MAX_ARM_HEIGHT == 3865){
+                MAX_ARM_HEIGHT = 9999;
+                MIN_ARM_HEIGHT = -9999;
+                logger.Log("setting height to " + MAX_ARM_HEIGHT + " and bottom to " + MIN_ARM_HEIGHT);
+            }else if(MAX_ARM_HEIGHT == 9999){
+                MAX_ARM_HEIGHT = 3865;
+                MIN_ARM_HEIGHT = 0;
+                logger.Log("setting height to back to " + MAX_ARM_HEIGHT + " and bottom to 0");
             }
         }));
 
@@ -121,6 +135,7 @@ public class MecanumTest extends OpMode {
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Armheight", armHeight);
         telemetry.addData("Servo", grabPosition);
+
         logger.tickLogger(telemetry);
     }
 }

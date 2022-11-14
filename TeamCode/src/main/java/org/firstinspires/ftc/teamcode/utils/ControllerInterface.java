@@ -18,8 +18,9 @@ public class ControllerInterface {
     public ArrayList<ButtonEvent> events = new ArrayList<>();
 
 
-    public ControllerInterface(Gamepad gamepad) {
+    public ControllerInterface(Gamepad gamepad, AdditiveLogger logger) {
         this.gamepad = gamepad;
+        this.logger = logger;
     }
 
     public void tick() {
@@ -64,9 +65,10 @@ public class ControllerInterface {
         if(gamepad.y) {
             if(onPressY) {
                 for(ButtonEvent event : events) {
-                    if(event.button == GamepadButton.B)
+                    if(event.button == GamepadButton.Y)
                         event.eventFunction.onPress();
                 }
+                logger.Log("Test");
                 onPressY = false;
             }
         }else{

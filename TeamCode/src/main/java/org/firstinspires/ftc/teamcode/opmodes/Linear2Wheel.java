@@ -78,8 +78,8 @@ public class Linear2Wheel extends LinearOpMode {
 
 
         // --- Add Controller Interfaces
-        ControllerInterface interface2 = new ControllerInterface(gamepad2);
-        ControllerInterface interface1 = new ControllerInterface(gamepad1);
+        ControllerInterface interface2 = null; //new ControllerInterface(gamepad2);
+        ControllerInterface interface1 = null; //new ControllerInterface(gamepad1);
         interface2.logger = logger;
 
         // --- Send Initialized Status
