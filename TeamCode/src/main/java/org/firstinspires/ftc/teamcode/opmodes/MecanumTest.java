@@ -16,6 +16,8 @@ import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 @TeleOp(name="MecanumTest", group="Mecanum")
 public class MecanumTest extends OpMode {
     private int MAX_ARM_HEIGHT = 4000;
+    private final int MAX_CLIP_HEIGHT = 1;
+    private final int MIN_CLIP_HEIGHT = -1;
     private int MIN_ARM_HEIGHT = 0;
     public static final double MAX_GRAB_DIST = 0.0692;
     private DcMotor front_left  = null;
@@ -108,17 +110,24 @@ public class MecanumTest extends OpMode {
 
         double drivemod = (double) driveMod.getModifier(gamepad1, logger);
 
-        double frontLeftPower = (drive + strafe + twist) * drivemod;
-        double frontRightPower = (drive - strafe - twist) * drivemod;
-        double backLeftPower = (drive - strafe - twist) * drivemod;
-        double backRightPower = (drive + strafe - twist) * drivemod;
+        double frontLeftPower = (drive + strafe);
+        double frontRightPower = (drive - strafe);
+        double backLeftPower = (drive - strafe);
+        double backRightPower = (drive + strafe);
+
+        // --------- Rotation Calculating
+
+        frontLeftPower = (frontLeftPower + (MAX_CLIP_HEIGHT - frontLeftPower)) * drivemod; //this should make rotation equal; rotation is weird because the rotation is value is static for each wheel, so if the left wheel is 0.5 power and the right is 0.75, and we add 0.25, the right wheel will be more powerful therefore breaking the rotation
+        frontRightPower = frontRightPower - ((MAX_CLIP_HEIGHT - frontLeftPower)) * drivemod;
+        backLeftPower = backLeftPower - ((MAX_CLIP_HEIGHT - frontLeftPower)) * drivemod;
+        backRightPower = backRightPower - ((MAX_CLIP_HEIGHT - frontLeftPower)) * drivemod;
 
         // --------- Range Clipping
 
-        frontLeftPower = Range.clip(frontLeftPower, -1, 1);
-        frontRightPower = Range.clip(frontRightPower, -1, 1);
-        backLeftPower = Range.clip(backLeftPower, -1, 1);
-        backRightPower = Range.clip(backRightPower, -1, 1);
+        frontLeftPower = Range.clip(frontLeftPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
+        frontRightPower = Range.clip(frontRightPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
+        backLeftPower = Range.clip(backLeftPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
+        backRightPower = Range.clip(backRightPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
         grabPosition = Range.clip(grabPosition, 0, MAX_GRAB_DIST);
 
         // --------- Power Setting
