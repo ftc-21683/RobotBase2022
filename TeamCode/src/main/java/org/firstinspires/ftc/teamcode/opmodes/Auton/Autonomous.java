@@ -60,11 +60,34 @@ public class Autonomous extends LinearOpMode {
 
         waitForStart();
         sequencer.AddMovement(() -> {
-            DriveWithSimController(1, 0, 0, 0, 0);
+            DriveWithSimController(0.2, 0, 0, 300, 0);
         }, 0.5, "Moving Forward!");
         sequencer.AddMovement(() -> {
-            DriveWithSimController(0, 1, 0, 0, 0);
-        }, 0.5, "Done!");
+            DriveWithSimController(0, 0, 0, 0, 0);
+        }, 2, "lower arm");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(0, 0, 0, 0, 0.0692);
+        }, 1, "Deploy grab");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(0, -0.25, 0, 3900, 0.0692);
+        }, 2.25, "move upwards and sidestep");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(0.1, 0, 0, 3300, 0.0692);
+        }, 1.2, "finish arm");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(0, 0, 0, 3800, 0);
+        }, 0.6, "drop");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(-0.35, -0.3, 0, 0, 0);
+        }, 0.5, "move back and left");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(-0.2, -0.3, 0, 0, 0);
+        }, 0.5, "");
+        sequencer.AddMovement(() -> {
+            DriveWithSimController(-0.3, 0, 0, 0, 0);
+        }, 0.5, "move back");
+
+        sequencer.logger = logger;
 
         sequencer.ExecuteSequence(runtime, this);
 

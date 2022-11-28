@@ -18,7 +18,7 @@ public class MovementSequencer {
     }
     public void AddMovement(Action action, double actionTime, String logmsg) {
         AddMovement(action,actionTime);
-        logmsgs.set(logmsg.length() - 1, logmsg);
+        logmsgs.set(logmsgs.size() - 1, logmsg);
     }
 
     public interface Action {

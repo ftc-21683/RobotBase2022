@@ -13,11 +13,9 @@ import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
 import org.firstinspires.ftc.teamcode.utils.GamepadButton;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
-@TeleOp(name="MecanumTest", group="Mecanum")
-public class MecanumTest extends OpMode {
+@TeleOp(name="MecanumSoloDriverTest", group="Mecanum")
+public class MecanumSingleDriver extends OpMode {
     private int MAX_ARM_HEIGHT = 4000;
-    private final int MAX_CLIP_HEIGHT = 1;
-    private final int MIN_CLIP_HEIGHT = -1;
     private int MIN_ARM_HEIGHT = 0;
     public static final double MAX_GRAB_DIST = 0.0692;
     private DcMotor front_left  = null;
@@ -29,11 +27,9 @@ public class MecanumTest extends OpMode {
     private int armHeight = 0;
     public static double grabPosition = 0;
 
-    ToggleModifier grabMod;
     ToggleModifier driveMod = new ToggleModifier(0.2f, 1, 0.75f);
     AdditiveLogger logger;
     ControllerInterface gp1ci;
-    ControllerInterface gp2ci;
 
     @Override
     public void init() {
@@ -58,17 +54,13 @@ public class MecanumTest extends OpMode {
         // --- Set Servo Direction
         grab.setDirection(Servo.Direction.REVERSE);
         // --- Set Custom stuff
-        grabMod     = new ToggleModifier(0.001f, 0.006f, 0.0005f);
         logger      = new AdditiveLogger(15);
         gp1ci       = new ControllerInterface(gamepad1, logger);
-        gp2ci       = new ControllerInterface(gamepad2, logger);
     }
 
     @Override
     public void loop() {
         gp1ci.tick();
-        gp2ci.tick();
-        // --------- Control Area
 
         //Drive
         double drive = -gamepad1.left_stick_y;
@@ -76,22 +68,34 @@ public class MecanumTest extends OpMode {
         double twist = gamepad1.right_stick_x;
 
         //Arm
-        if (gamepad2.dpad_up && armHeight < MAX_ARM_HEIGHT) {
-            armHeight += 3;
+        if (armHeight < MAX_ARM_HEIGHT) {
+            armHeight += gamepad1.right_trigger * 3;
         }
-        if (gamepad2.dpad_down && armHeight > MIN_ARM_HEIGHT) {
-            armHeight -= 2;
+        if (armHeight > MIN_ARM_HEIGHT) {
+            armHeight -= gamepad1.left_trigger * 2;
         }
 
-        gp2ci.events.add(new ButtonEvent(GamepadButton.X, () -> {
-            if(MecanumTest.grabPosition == MAX_GRAB_DIST) {
-                MecanumTest.grabPosition = 0;
+        gp1ci.events.add(new ButtonEvent(GamepadButton.X, () -> {
+            if(MecanumSingleDriver.grabPosition == MAX_GRAB_DIST) {
+                MecanumSingleDriver.grabPosition = 0;
             }else {
-                MecanumTest.grabPosition = MAX_GRAB_DIST;
+                MecanumSingleDriver.grabPosition = MAX_GRAB_DIST;
             }
         }));
 
-        gp2ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
+        gp1ci.events.add(new ButtonEvent(GamepadButton.A, () -> {
+            armHeight = 0;
+        }));
+
+        gp1ci.events.add(new ButtonEvent(GamepadButton.B, () -> {
+            armHeight = 2860;
+        }));
+
+        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
+            armHeight = 3965;
+        }));
+
+        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
             if(MAX_ARM_HEIGHT == 3865){
                 MAX_ARM_HEIGHT = 9999;
                 MIN_ARM_HEIGHT = -9999;
@@ -104,7 +108,7 @@ public class MecanumTest extends OpMode {
         }));
 
         //Grab
-        grabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);
+        grabPosition += (gamepad1.dpad_down ? -1 : 0) + (gamepad1.dpad_up ? 1 : 0) * 0.006f;
 
         // --------- Power Calculations
 
@@ -117,10 +121,10 @@ public class MecanumTest extends OpMode {
 
         // --------- Range Clipping
 
-        frontLeftPower = Range.clip(frontLeftPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
-        frontRightPower = Range.clip(frontRightPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
-        backLeftPower = Range.clip(backLeftPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
-        backRightPower = Range.clip(backRightPower, MIN_CLIP_HEIGHT, MAX_CLIP_HEIGHT);
+        frontLeftPower = Range.clip(frontLeftPower, -1, 1);
+        frontRightPower = Range.clip(frontRightPower, -1, 1);
+        backLeftPower = Range.clip(backLeftPower, -1, 1);
+        backRightPower = Range.clip(backRightPower, -1, 1);
         grabPosition = Range.clip(grabPosition, 0, MAX_GRAB_DIST);
 
         // --------- Power Setting
