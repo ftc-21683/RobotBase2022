@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.Pipelines;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;

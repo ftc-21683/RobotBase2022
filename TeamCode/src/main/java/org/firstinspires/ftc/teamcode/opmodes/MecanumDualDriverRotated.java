@@ -13,9 +13,11 @@ import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
 import org.firstinspires.ftc.teamcode.utils.GamepadButton;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
-@TeleOp(name="MecanumSoloDriverTest", group="Mecanum")
-public class MecanumSingleDriver extends OpMode {
-    private int MAX_ARM_HEIGHT = 4000;
+@TeleOp(name="MecanumDualDriverRotated", group="Mecanum")
+public class MecanumDualDriverRotated extends OpMode {
+    private int MAX_ARM_HEIGHT = 4100;
+    private final int MAX_CLIP_HEIGHT = 1;
+    private final int MIN_CLIP_HEIGHT = -1;
     private int MIN_ARM_HEIGHT = 0;
     public static final double MAX_GRAB_DIST = 0.0692;
     private DcMotor front_left  = null;
@@ -27,9 +29,19 @@ public class MecanumSingleDriver extends OpMode {
     private int armHeight = 0;
     public static double grabPosition = 0;
 
+    ToggleModifier grabMod;
     ToggleModifier driveMod = new ToggleModifier(0.2f, 1, 0.75f);
     AdditiveLogger logger;
     ControllerInterface gp1ci;
+    ControllerInterface gp2ci;
+
+    private static void onPress() {
+        if (grabPosition == MAX_GRAB_DIST) {
+            grabPosition = 0;
+            return;
+        }
+        grabPosition = MAX_GRAB_DIST;
+    }
 
     @Override
     public void init() {
@@ -54,61 +66,56 @@ public class MecanumSingleDriver extends OpMode {
         // --- Set Servo Direction
         grab.setDirection(Servo.Direction.REVERSE);
         // --- Set Custom stuff
+        grabMod     = new ToggleModifier(0.001f, 0.006f, 0.0005f);
         logger      = new AdditiveLogger(15);
         gp1ci       = new ControllerInterface(gamepad1, logger);
+        gp2ci       = new ControllerInterface(gamepad2, logger);
     }
 
     @Override
     public void loop() {
         gp1ci.tick();
+        gp2ci.tick();
 
         //Drive
-        double drive = -gamepad1.left_stick_y;
-        double strafe = gamepad1.left_stick_x * 1.1;
+        double drive = gamepad1.left_stick_x;
+        double strafe = gamepad1.left_stick_y * 1.1;
         double twist = gamepad1.right_stick_x;
 
         //Arm
         if (armHeight < MAX_ARM_HEIGHT) {
-            armHeight += gamepad1.right_trigger * 3;
+            armHeight += (gamepad2.dpad_up ? 1 : 0) * 3;
         }
         if (armHeight > MIN_ARM_HEIGHT) {
-            armHeight -= gamepad1.left_trigger * 2;
+            armHeight -= (gamepad2.dpad_down ? 1 : 0) * 3;
         }
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.X, () -> {
-            if(MecanumSingleDriver.grabPosition == MAX_GRAB_DIST) {
-                MecanumSingleDriver.grabPosition = 0;
-            }else {
-                MecanumSingleDriver.grabPosition = MAX_GRAB_DIST;
+        gp2ci.events.add(new ButtonEvent(GamepadButton.X, MecanumDualDriverRotated::onPress));
+
+        gp2ci.events.add(new ButtonEvent(GamepadButton.A, () -> {
+            armHeight = MIN_ARM_HEIGHT;
+            if(gamepad2.right_bumper) {
+                MAX_ARM_HEIGHT = Integer.MAX_VALUE;
             }
         }));
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.A, () -> {
-            armHeight = 0;
-        }));
-
-        gp1ci.events.add(new ButtonEvent(GamepadButton.B, () -> {
-            armHeight = 2860;
-        }));
-
-        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
-            armHeight = 3965;
-        }));
-
-        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
-            if(MAX_ARM_HEIGHT == 3865){
-                MAX_ARM_HEIGHT = 9999;
-                MIN_ARM_HEIGHT = -9999;
-                logger.Log("setting height to " + MAX_ARM_HEIGHT + " and bottom to " + MIN_ARM_HEIGHT);
-            }else if(MAX_ARM_HEIGHT == 9999){
-                MAX_ARM_HEIGHT = 3865;
-                MIN_ARM_HEIGHT = 0;
-                logger.Log("setting height to back to " + MAX_ARM_HEIGHT + " and bottom to 0");
+        gp2ci.events.add(new ButtonEvent(GamepadButton.B, () -> {
+            if(MAX_ARM_HEIGHT > 7000) {
+                return;
             }
+            armHeight = (int) Math.ceil(MAX_ARM_HEIGHT * 0.75);
+        }));
+
+        gp2ci.events.add(new ButtonEvent(GamepadButton.Y, () -> {
+            if(MAX_ARM_HEIGHT > 7000) {
+                return;
+            }
+            armHeight = MAX_ARM_HEIGHT;
+            
         }));
 
         //Grab
-        grabPosition += (gamepad1.dpad_down ? -1 : 0) + (gamepad1.dpad_up ? 1 : 0) * 0.006f;
+        grabPosition += gamepad2.left_stick_y * grabMod.getModifier(gamepad2, logger);
 
         // --------- Power Calculations
 
@@ -143,6 +150,7 @@ public class MecanumSingleDriver extends OpMode {
         telemetry.addData("Servo", grabPosition);
 
         logger.tickLogger(telemetry);
+
     }
 }
 

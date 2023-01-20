@@ -19,6 +19,10 @@ import java.util.regex.Pattern
 
 apply plugin: 'com.android.application'
 
+repositories {
+    mavenCentral()
+}
+
 android {
 
     compileSdkVersion 29
@@ -54,9 +58,10 @@ android {
     defaultConfig {
         signingConfig signingConfigs.debug
         applicationId 'com.qualcomm.ftcrobotcontroller'
-        minSdkVersion 23
+        minSdkVersion 24
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
+        multiDexEnabled true
 
         /**
          * We keep the versionCode and versionName of robot controller applications in sync with
@@ -92,17 +97,10 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-
-            ndk {
-                abiFilters "armeabi-v7a"
-            }
         }
         debug {
             debuggable true
             jniDebuggable true
-            ndk {
-                abiFilters "armeabi-v7a"
-            }
         }
     }
 

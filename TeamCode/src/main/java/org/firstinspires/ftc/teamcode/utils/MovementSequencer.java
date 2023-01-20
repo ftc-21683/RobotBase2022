@@ -1,40 +1,38 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.opmodes.Auton.AutonMode;
+import org.firstinspires.ftc.teamcode.subsystems.Drivebase;
+import org.firstinspires.ftc.teamcode.utils.movement.Movement;
 
 import java.util.ArrayList;
 
 public class MovementSequencer {
-    ArrayList<Action> eventFunction = new ArrayList<>();
-    ArrayList<Double> eventTime = new ArrayList<>();
-    ArrayList<String> logmsgs = new ArrayList<>();
+    ArrayList<Movement> movements = new ArrayList<>();
     public AdditiveLogger logger;
+    public Drivebase drivebase;
+    int progress = 0;
 
-    public void AddMovement(Action action, double actionTime) {
-        this.eventFunction.add(action);
-        eventTime.add(actionTime);
-        logmsgs.add(null);
-    }
-    public void AddMovement(Action action, double actionTime, String logmsg) {
-        AddMovement(action,actionTime);
-        logmsgs.set(logmsgs.size() - 1, logmsg);
+
+    public void AddMovement(Movement action) {
+        this.movements.add(action);
     }
 
-    public interface Action {
-        public void execute();
-    }
-
-    public void ExecuteSequence(ElapsedTime runtime, OpMode opMode) {
-        for(int i = 0; i < eventFunction.size(); i++) {
-            runtime.reset();
-            if(!logmsgs.get(i).isEmpty() || logmsgs.get(i) != null) {
-                logger.Log(logmsgs.get(i));
+    public void tick(AutonMode opMode) {
+        Movement movement = movements.get(progress);
+        if(movement.pid.getPositionError() < 20) {
+            if(((AutonMode) opMode).requestedStop()) {
+                return;
             }
-            while (runtime.seconds() < (double) eventTime.get(i)) {
-                eventFunction.get(i).execute();
-            }
+            //movement.pid.calculate(opMode.getSubSystems().getDrivebase());
         }
-        opMode.requestOpModeStop();
+        ((OpMode) opMode).requestOpModeStop();
     }
+
+
+
+
 }

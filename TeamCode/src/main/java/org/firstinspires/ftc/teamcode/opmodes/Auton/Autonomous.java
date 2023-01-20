@@ -8,124 +8,41 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.opmodes.MecanumTest;
+import org.firstinspires.ftc.teamcode.Subsystems;
+import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
-import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
 import org.firstinspires.ftc.teamcode.utils.MovementSequencer;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="MecanumAuton", group="Mecanum")
-public class Autonomous extends LinearOpMode {
-    private DcMotor front_left  = null;
-    private DcMotor front_right = null;
-    private DcMotor back_left   = null;
-    private DcMotor back_right  = null;
-    private DcMotor arm = null;
-    private Servo grab = null;
-    double grabPosition = 0;
-    int armHeight = 0;
-
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="A_right", group="Mecanum")
+public class Autonomous extends OpMode implements AutonMode {
+    Subsystems systems;
     ToggleModifier grabMod;
     AdditiveLogger logger;
 
-    private ElapsedTime runtime = new ElapsedTime();
     private final MovementSequencer sequencer = new MovementSequencer();
 
-
     @Override
-    public void runOpMode() throws InterruptedException {
-        // --- Register Drive Motors
-        front_left   = hardwareMap.get(DcMotor.class, "front_left");
-        front_right  = hardwareMap.get(DcMotor.class, "front_right");
-        back_left    = hardwareMap.get(DcMotor.class, "back_left");
-        back_right   = hardwareMap.get(DcMotor.class, "back_right");
+    public void init() {
+        systems = new Subsystems(hardwareMap);
 
-        // --- Register Arm Motor
-        arm          = hardwareMap.get(DcMotor.class, "arm");
-
-        // --- Register Arm Servo
-        grab         = hardwareMap.get(Servo.class, "grab");
-
-        // --- Set Motor Direction
-        front_right.setDirection(DcMotorSimple.Direction.FORWARD);
-        back_left.setDirection(DcMotorSimple.Direction.FORWARD);
-        back_right.setDirection(DcMotorSimple.Direction.REVERSE);
-        arm.setDirection(DcMotor.Direction.REVERSE);
-
-        // --- Set Servo Direction
-        grab.setDirection(Servo.Direction.REVERSE);
         // --- Set Custom stuff
         grabMod     = new ToggleModifier(0.001f, 0.006f, 0.0005f);
         logger      = new AdditiveLogger(15);
-
-        waitForStart();
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0.2, 0, 0, 300, 0);
-        }, 0.5, "Moving Forward!");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0, 0, 0, 0, 0);
-        }, 2, "lower arm");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0, 0, 0, 0, 0.0692);
-        }, 1, "Deploy grab");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0, -0.25, 0, 3900, 0.0692);
-        }, 2.25, "move upwards and sidestep");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0.1, 0, 0, 3300, 0.0692);
-        }, 1.2, "finish arm");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(0, 0, 0, 3800, 0);
-        }, 0.6, "drop");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(-0.35, -0.3, 0, 0, 0);
-        }, 0.5, "move back and left");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(-0.2, -0.3, 0, 0, 0);
-        }, 0.5, "");
-        sequencer.AddMovement(() -> {
-            DriveWithSimController(-0.3, 0, 0, 0, 0);
-        }, 0.5, "move back");
-
-        sequencer.logger = logger;
-
-        sequencer.ExecuteSequence(runtime, this);
-
-
     }
 
-    void DriveWithSimController(double gp1lsy, double gp1lsx, double gp1rsx, int armcontroll, double servo) {
-        double drive = gp1lsy;
-        double strafe = gp1lsx * 1.1;
-        double twist = gp1rsx;
-        armHeight = armcontroll;
-        grabPosition = servo;
-
-        double frontLeftPower = (drive + strafe + twist);
-        double frontRightPower = (drive - strafe - twist);
-        double backLeftPower = (drive - strafe - twist);
-        double backRightPower = (drive + strafe - twist);
-
-        frontLeftPower = Range.clip(frontLeftPower, -1, 1);
-        frontRightPower = Range.clip(frontRightPower, -1, 1);
-        backLeftPower = Range.clip(backLeftPower, -1, 1);
-        backRightPower = Range.clip(backRightPower, -1, 1);
-        grabPosition = Range.clip(grabPosition, 0, MecanumTest.MAX_GRAB_DIST);
-
-        front_left.setPower(frontLeftPower);
-        front_right.setPower(frontRightPower);
-        back_left.setPower(backLeftPower);
-        back_right.setPower(backRightPower);
-
-        arm.setPower(0.5);
-        arm.setTargetPosition(armHeight);
-
-        grab.setPosition(grabPosition);
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        telemetry.addData("Armheight", armHeight);
-        telemetry.addData("Servo", grabPosition);
-
-        logger.tickLogger(telemetry);
+    @Override
+    public void loop() {
+        sequencer.tick(this);
     }
 
+    @Override
+    public boolean requestedStop() {
+        return false;
+    }
+
+    @Override
+    public Subsystems getSubSystems() {
+        return null;
+    }
 }
