@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.qualcomm.hardware.bosch.BHI260IMU;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
+import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.teamcode.Subsystems;
 import org.firstinspires.ftc.teamcode.subsystems.Drivebase;
@@ -23,19 +21,21 @@ import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 public class SingleDriverRefactored extends OpMode {
     Subsystems subsystems;
     ToggleModifier driveMod = new ToggleModifier(0.2f, 1, 0.75f);
-    AdditiveLogger logger;
     ControllerInterface gp1ci;
     Elevator elevator;
     Intake intake;
     Drivebase drivebase;
     Gyroscope gyroscope;
+    AdditiveLogger logger;
+    GamepadEx driverOp;
+    boolean showExtraInfo;
 
     @Override
     public void init() {
         subsystems = new Subsystems(hardwareMap);
-
+        driverOp = new GamepadEx(gamepad1);
         // --- Set Custom stuff
-        logger      = new AdditiveLogger(15);
+        logger = subsystems.getLogger();
         gp1ci       = new ControllerInterface(gamepad1, logger);
 
         elevator = subsystems.getElevator();
@@ -49,49 +49,69 @@ public class SingleDriverRefactored extends OpMode {
         gp1ci.tick();
 
         //Drive
-        double strafe = gamepad1.left_stick_x * 1.1;
+        double strafe = gamepad1.left_stick_x;
         double drivemod = (double) driveMod.getModifier(gamepad1, logger) * Drivebase.MAX_VELOCITY;
 
         drivebase.run(
-            -gamepad1.left_stick_y * drivemod,
-            gamepad1.right_stick_x * drivemod,
-            strafe * drivemod
+            driverOp.getLeftY() * drivemod,
+            driverOp.getRightX() * drivemod,
+            driverOp.getLeftX() * drivemod
         );
 
-        /*drivebase.runFieldOriented(
-        -gamepad1.left_stick_y * drivemod,
-        strafe * drivemod,
-        gamepad1.right_stick_x * drivemod
-        );*/
+        drivebase.updatePose(getRuntime());
 
         //---------- Elevator Manual Controls
 
-        elevator.addPosition((gamepad1.left_trigger > 0 ? 1 : 0) * 3);
-        elevator.addPosition((gamepad1.right_trigger > 0 ? 1 : 0) * -3);
+        elevator.addPosition((driverOp.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0 ? 1 : 0));
+        elevator.addPosition(-(driverOp.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0 ? 1 : 0));
 
         //---------- Elevator Macros
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.X, intake::toggleOpen));
+        if(driverOp.wasJustPressed(GamepadKeys.Button.X)) {
+            intake.toggle();
+        }
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.A, elevator::floor));
+        if(driverOp.wasJustPressed(GamepadKeys.Button.A)) {
+            elevator.runToPercentage(0);
+        }
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.B, () -> {
+        if(driverOp.wasJustPressed(GamepadKeys.Button.B)) {
             elevator.runToPercentage(0.75);
-        }));
+        }
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, elevator::ceiling));
+        if(driverOp.wasJustPressed(GamepadKeys.Button.Y)) {
+            elevator.runToPercentage(1);
+        }
 
         //---------- Intake
-        if(gamepad1.dpad_down) {
+        if(driverOp.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
             intake.close();
         }
-        if(gamepad1.dpad_up) {
+        if(driverOp.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
             intake.open();
         }
+        if(driverOp.wasJustPressed(GamepadKeys.Button.X)) {
+            intake.toggle();
+        }
+
+
+        if(driverOp.isDown(GamepadKeys.Button.A)) {
+            if(driverOp.wasJustPressed(GamepadKeys.Button.X)) {
+
+            }
+        }
+
 
         telemetry.addData("Armheight", elevator.getPosition());
         telemetry.addData("Servo", intake.getPosition());
         telemetry.addData("Gyroscope", gyroscope.getYaw());
+
+        telemetry.addData("Drive", driverOp.getLeftY());
+        telemetry.addData("Strafe", driverOp.getRightX());
+        telemetry.addData("Twist", driverOp.getLeftX());
+        telemetry.addData("Position", String.format("x: %f, y: %f", drivebase.pose.getX(), drivebase.pose.getY()));
+
+        driverOp.readButtons();
 
         logger.tickLogger(telemetry);
     }

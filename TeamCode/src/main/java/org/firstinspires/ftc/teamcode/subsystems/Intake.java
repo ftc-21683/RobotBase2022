@@ -7,6 +7,7 @@ public class Intake {
 
     double closed = 0;
     public static final double open = 0.0692;
+    boolean check = true;
 
     public Intake(Servo intake) {
         this.intake = intake;
@@ -21,7 +22,8 @@ public class Intake {
         return intake.getPosition() == open;
     }
 
-    public void toggleOpen() {
+    public void toggle() {
+        System.out.println("toggled");
         if(isOpen()) {
             close();
             return;

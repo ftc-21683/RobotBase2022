@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,9 +11,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Elevator;
 import org.firstinspires.ftc.teamcode.subsystems.Gyroscope;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
-import org.firstinspires.ftc.teamcode.utils.ButtonEvent;
 import org.firstinspires.ftc.teamcode.utils.ControllerInterface;
-import org.firstinspires.ftc.teamcode.utils.GamepadButton;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
 @TeleOp(name="MecanumDualDriverRefactored", group="Mecanum")
@@ -27,6 +27,8 @@ public class MecanumDualDriverRefactored extends OpMode {
     Intake intake;
     Drivebase drivebase;
     Gyroscope gyroscope;
+    GamepadEx driver;
+    GamepadEx operator;
 
     @Override
     public void init() {
@@ -38,7 +40,8 @@ public class MecanumDualDriverRefactored extends OpMode {
         gp2ci       = new ControllerInterface(gamepad2, logger);
 
         // --- Declare Subsystems
-
+        driver = new GamepadEx(gamepad1);
+        operator = new GamepadEx(gamepad2);
         elevator = subsystems.getElevator();
         intake = subsystems.getIntake();
         drivebase = subsystems.getDrivebase();
@@ -55,28 +58,34 @@ public class MecanumDualDriverRefactored extends OpMode {
         double drivemod = (double) driveMod.getModifier(gamepad1, logger) * Drivebase.MAX_VELOCITY;
 
         drivebase.run(
-                -gamepad1.left_stick_y * drivemod ,
-                strafe * drivemod,
-                gamepad1.right_stick_x * drivemod
+        -gamepad1.left_stick_y * drivemod ,
+        gamepad1.right_stick_x * drivemod,
+        strafe * drivemod
         );
 
 
         //---------- Elevator Manual Controls
 
-        elevator.addPosition((gamepad2.dpad_up ? 1 : 0) * 3);
-        elevator.addPosition((gamepad2.dpad_down ? 1 : 0) * -3);
+        elevator.addPosition((gamepad2.dpad_up ? 1 : 0));
+        elevator.addPosition(-(gamepad2.dpad_down ? 1 : 0));
 
         //---------- Elevator Macros
 
-        gp2ci.events.add(new ButtonEvent(GamepadButton.X, intake::toggleOpen));
+        if(operator.wasJustPressed(GamepadKeys.Button.X)) {
+            intake.toggle();
+        }
 
-        gp2ci.events.add(new ButtonEvent(GamepadButton.A, elevator::floor));
+        if(gamepad2.a) {
+            elevator.runToPercentage(0);
+        }
 
-        gp2ci.events.add(new ButtonEvent(GamepadButton.B, () -> {
+        if(gamepad2.b) {
             elevator.runToPercentage(0.75);
-        }));
+        }
 
-        gp1ci.events.add(new ButtonEvent(GamepadButton.Y, elevator::ceiling));
+        if(gamepad2.y) {
+            elevator.runToPercentage(1);
+        }
 
         //---------- Intake
         if(gamepad2.left_stick_y < 0) {
@@ -90,7 +99,8 @@ public class MecanumDualDriverRefactored extends OpMode {
         telemetry.addData("Armheight", elevator.getPosition());
         telemetry.addData("Servo", intake.getPosition());
         telemetry.addData("Gyroscope", gyroscope.getYaw());
-
+        operator.readButtons();
+        driver.readButtons();
         logger.tickLogger(telemetry);
 
     }

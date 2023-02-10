@@ -68,7 +68,6 @@ public class ControllerInterface {
                     if(event.button == GamepadButton.Y)
                         event.eventFunction.onPress();
                 }
-                logger.Log("Test");
                 onPressY = false;
             }
         }else{

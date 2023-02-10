@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes.Auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,11 +11,13 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.Subsystems;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
+import org.firstinspires.ftc.teamcode.utils.LegacyMoveSequencer;
+import org.firstinspires.ftc.teamcode.utils.LegacyMovement;
 import org.firstinspires.ftc.teamcode.utils.MovementSequencer;
 import org.firstinspires.ftc.teamcode.utils.ToggleModifier;
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="High_J_Left", group="Mecanum")
-public class AutonomousLeft extends LinearOpMode implements AutonMode {
+public class AutonomousLeft extends OpMode implements AutonMode {
     private DcMotor front_left  = null;
     private DcMotor front_right = null;
     private DcMotor back_left   = null;
@@ -28,11 +31,11 @@ public class AutonomousLeft extends LinearOpMode implements AutonMode {
     AdditiveLogger logger;
 
     private ElapsedTime runtime = new ElapsedTime();
-    private final MovementSequencer sequencer = new MovementSequencer();
+    private final LegacyMoveSequencer sequencer = new LegacyMoveSequencer();
 
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void init() {
         // --- Register Drive Motors
         front_left   = hardwareMap.get(DcMotor.class, "front_left");
         front_right  = hardwareMap.get(DcMotor.class, "front_right");
@@ -57,50 +60,44 @@ public class AutonomousLeft extends LinearOpMode implements AutonMode {
         // --- Set Custom stuff
         grabMod     = new ToggleModifier(0.001f, 0.006f, 0.0005f);
         logger      = new AdditiveLogger(15);
-
-        waitForStart();
-
         int LowArmHeight = 1000;
 
-        /*sequencer.AddMovement(() -> {
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0, 0, LowArmHeight, 0.0692);
-        }, 0.5, "Configure Cone!");
-        sequencer.AddMovement(() -> {
+        }, 500));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0.3, 0, 0, LowArmHeight, 0.0692);
-        }, 4, "Push graciously professional Cone out of the way!");
-        sequencer.AddMovement(() -> {
+        }, 4000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(-0.3, 0, 0, LowArmHeight, 0.0692);
-        }, 0.9, "Moving Back!");
-        sequencer.AddMovement(() -> {
+        }, 900));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0.3, 0, 4100, 0.0692);
-        }, 1, "Moving Left!");
-        sequencer.AddMovement(() -> {
+        }, 1000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0.1, 0, 0, 4100, 0.0692);
-        }, 3, "Moving Forward!");
-        sequencer.AddMovement(() -> {
+        }, 3000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0, 0, 4000, 0);
-        }, 2, "Unhook Cone!");
-        sequencer.AddMovement(() -> {
+        }, 2000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(-0.2, 0, 0, 0, 0);
-        }, 1, "Moving Back!");
-        sequencer.AddMovement(() -> {
+        }, 1000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0, 0, 0, 0);
-        }, 5, "Moving Go Down!");
-        sequencer.AddMovement(() -> {
+        }, 5));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, -0.3, 0, 0, 0.0692);
-        }, 1, "Moving Right!");
-        sequencer.AddMovement(() -> {
+        }, 1000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(-0.3, 0, 0, 0, 0);
-        }, 2, "Coming Back");
-        sequencer.AddMovement(() -> {
+        }, 2000));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0, 0.5, 0, 0);
-        }, 0.75, "rotate to face the left");
-        sequencer.AddMovement(() -> {
+        }, 7500));
+        sequencer.addMovement(new LegacyMovement(() -> {
             DriveWithSimController(0, 0.3, 0, 0, 0);
-        }, 1.2, "Finish coming back");*/
-
-        sequencer.logger = logger;
-
+        }, 1200));
         //sequencer.ExecuteSequence(this, runtime, this);
 
 
@@ -108,7 +105,7 @@ public class AutonomousLeft extends LinearOpMode implements AutonMode {
 
     @Override
     public boolean requestedStop() {
-        return isStopRequested();
+        return false;
     }
 
     @Override
@@ -150,4 +147,8 @@ public class AutonomousLeft extends LinearOpMode implements AutonMode {
         logger.tickLogger(telemetry);
     }
 
+    @Override
+    public void loop() {
+        sequencer.tick(this);
+    }
 }

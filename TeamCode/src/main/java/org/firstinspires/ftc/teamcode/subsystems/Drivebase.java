@@ -24,6 +24,12 @@ public class Drivebase {
     Translation2d m_backLeftLocation = new Translation2d(0.192, -0.12);
     private final DcMotor back_right;
     Translation2d m_backRightLocation = new Translation2d(-0.192, -0.12);
+
+    Motor.Encoder front_left_encoder;
+    Motor.Encoder front_right_encoder;
+    Motor.Encoder back_left_encoder;
+    Motor.Encoder back_right_encoder;
+
     Gyroscope gyro;
     MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics
             (
@@ -31,8 +37,7 @@ public class Drivebase {
                     m_backLeftLocation, m_backRightLocation
             );
     MecanumDriveOdometry m_odometry;
-    int x = 0;
-    int y = 0;
+    public Pose2d pose = new Pose2d();
     MecanumDrive mecanumController;
 
     public Drivebase(Motor front_left, Motor front_right, Motor back_left, Motor back_right, Gyroscope gyro) {
@@ -48,8 +53,14 @@ public class Drivebase {
         this.back_left.setDirection(DcMotorSimple.Direction.REVERSE);
         this.back_right.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        m_odometry = new MecanumDriveOdometry
-        (
+
+        front_left_encoder = front_left.encoder;
+        front_right_encoder = front_right.encoder;
+
+        back_left_encoder = back_left.encoder;
+        back_right_encoder = back_right.encoder;
+
+        m_odometry = new MecanumDriveOdometry (
             m_kinematics, gyro.getHeading(),
             new Pose2d(0.0, 0.0, new Rotation2d())
         );
@@ -57,12 +68,20 @@ public class Drivebase {
         mecanumController = new MecanumDrive(front_left, front_right, back_left, back_right);
     }
 
+
+
     /**
      * @param drive Forwards and backwards movement
      * @param strafe Left and right movement
      * @param twist Rotational movement
      */
     public void run(double drive, double strafe, double twist) {
+        this.front_right.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.front_left.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.back_right.setDirection(DcMotorSimple.Direction.FORWARD);
+
+
         double frontLeftPower = (drive + strafe + twist);
         double frontRightPower = (drive - strafe - twist);
         double backLeftPower = (drive - strafe + twist);
@@ -79,37 +98,33 @@ public class Drivebase {
         back_right.setPower(backRightPower);
     }
 
+    /**
+     * @param drive Forwards and backwards movement
+     * @param strafe Left and right movement
+     * @param twist Rotational movement
+     */
+    public void runFTCLIB(double drive, double strafe, double twist) {
+        this.front_right.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.front_left.setDirection(DcMotorSimple.Direction.FORWARD);
+        this.back_left.setDirection(DcMotorSimple.Direction.REVERSE);
+        this.back_right.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        mecanumController.driveRobotCentric(strafe, drive, twist);
+    }
+
     public void runFieldOriented(double drive, double strafe, double twist) {
         mecanumController.driveFieldCentric(strafe, drive, twist, gyro.getYaw());
     }
 
-    public void runFieldOriented(double elapsedTime, double drive, double strafe, double twist) {
-        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds
-                (
-                        front_left.getPower() * MAX_VELOCITY, front_right.getPower() * MAX_VELOCITY,
-                        back_left.getPower() * MAX_VELOCITY, back_right.getPower() * MAX_VELOCITY
-                );
+    public void updatePose(double elapsedTime) {
+        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds (
+            front_left_encoder.getRate(), front_right_encoder.getRate(),
+            back_left_encoder.getRate(), back_right_encoder.getRate()
+        );
+
         Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getYaw());
 
-        m_odometry.updateWithTime(elapsedTime, gyroAngle, wheelSpeeds);
 
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(drive, strafe, twist, gyroAngle);
-
-        wheelSpeeds = m_kinematics.toWheelSpeeds(speeds);
-
-        double frontLeft = wheelSpeeds.frontLeftMetersPerSecond / MAX_VELOCITY;
-        double frontRight = wheelSpeeds.frontRightMetersPerSecond / MAX_VELOCITY;
-        double backLeft = wheelSpeeds.rearLeftMetersPerSecond / MAX_VELOCITY;
-        double backRight = wheelSpeeds.rearRightMetersPerSecond / MAX_VELOCITY;
-
-        frontLeft = Range.clip(frontLeft, -1, 1);
-        frontRight = Range.clip(frontRight, -1, 1);
-        backLeft = Range.clip(backLeft, -1, 1);
-        backRight = Range.clip(backRight, -1, 1);
-
-        front_left.setPower(frontLeft);
-        front_right.setPower(frontRight);
-        back_left.setPower(backLeft);
-        back_right.setPower(backRight);
+        pose = m_odometry.updateWithTime(elapsedTime, gyroAngle, wheelSpeeds);
     }
 }

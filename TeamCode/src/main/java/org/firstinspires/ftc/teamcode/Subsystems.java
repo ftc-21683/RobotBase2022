@@ -10,12 +10,14 @@ import org.firstinspires.ftc.teamcode.subsystems.Drivebase;
 import org.firstinspires.ftc.teamcode.subsystems.Elevator;
 import org.firstinspires.ftc.teamcode.subsystems.Gyroscope;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.utils.AdditiveLogger;
 
 public class Subsystems {
     final Drivebase drivebase;
     final Elevator elevator;
     final Intake intake;
     final Gyroscope gyroscope;
+    final AdditiveLogger logger;
 
     public Drivebase getDrivebase() {
         return drivebase;
@@ -32,6 +34,7 @@ public class Subsystems {
     public Gyroscope getGyroscope() {
         return gyroscope;
     }
+    public AdditiveLogger getLogger() {return  logger;}
 
     public Subsystems(HardwareMap hardwareMap) {
         gyroscope = new Gyroscope(hardwareMap.get(IMU.class, "imu"));
@@ -48,5 +51,6 @@ public class Subsystems {
         intake = new Intake(
             hardwareMap.get(Servo.class, "grab")
         );
+        logger = new AdditiveLogger(11);
     }
 }
