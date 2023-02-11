@@ -19,7 +19,7 @@ public class Intake {
     }
 
     public boolean isOpen() {
-        return intake.getPosition() == open;
+        return intake.getPosition() - open < 0.05;
     }
 
     public void toggle() {

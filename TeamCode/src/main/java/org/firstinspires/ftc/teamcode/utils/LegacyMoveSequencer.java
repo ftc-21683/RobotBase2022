@@ -32,7 +32,7 @@ public class LegacyMoveSequencer {
             return;
         }
         progress++;
-        if(progress == movements.size() - 1) {
+        if(progress == movements.size()) {
             ((OpMode) opMode).requestOpModeStop();
         }
         timer = null;

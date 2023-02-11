@@ -21,10 +21,11 @@ public class Elevator {
         this.arm = arm;
         arm.setDirection(DcMotor.Direction.REVERSE);
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        position = arm.getCurrentPosition();
     }
 
     public void runToPosition(int position) {
-        runToPosition(position, false);
+        runToPosition(position, true);
     }
 
     public void runToPosition(int position, boolean ignoreMinMax) {
@@ -57,10 +58,6 @@ public class Elevator {
         }
         position += addition * multiplier;
         runToPosition();
-    }
-
-    public void resetZero() {
-
     }
 
 

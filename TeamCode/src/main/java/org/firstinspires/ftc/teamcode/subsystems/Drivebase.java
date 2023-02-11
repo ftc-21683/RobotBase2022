@@ -30,7 +30,7 @@ public class Drivebase {
     Motor.Encoder back_left_encoder;
     Motor.Encoder back_right_encoder;
 
-    Gyroscope gyro;
+    // Gyroscope gyro;
     MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics
             (
                     m_frontLeftLocation, m_frontRightLocation,
@@ -45,7 +45,7 @@ public class Drivebase {
         this.front_right = front_right.motor;
         this.back_left = back_left.motor;
         this.back_right = back_right.motor;
-        this.gyro = gyro;
+        //this.gyro = gyro;
 
         // -- Set Directions
         this.front_right.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -60,10 +60,10 @@ public class Drivebase {
         back_left_encoder = back_left.encoder;
         back_right_encoder = back_right.encoder;
 
-        m_odometry = new MecanumDriveOdometry (
-            m_kinematics, gyro.getHeading(),
-            new Pose2d(0.0, 0.0, new Rotation2d())
-        );
+//        m_odometry = new MecanumDriveOdometry (
+//            m_kinematics, gyro.getHeading(),
+//            new Pose2d(0.0, 0.0, new Rotation2d())
+//        );
 
         mecanumController = new MecanumDrive(front_left, front_right, back_left, back_right);
     }
@@ -112,19 +112,19 @@ public class Drivebase {
         mecanumController.driveRobotCentric(strafe, drive, twist);
     }
 
-    public void runFieldOriented(double drive, double strafe, double twist) {
-        mecanumController.driveFieldCentric(strafe, drive, twist, gyro.getYaw());
-    }
+//    public void runFieldOriented(double drive, double strafe, double twist) {
+//        mecanumController.driveFieldCentric(strafe, drive, twist, gyro.getYaw());
+//    }
 
-    public void updatePose(double elapsedTime) {
-        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds (
-            front_left_encoder.getRate(), front_right_encoder.getRate(),
-            back_left_encoder.getRate(), back_right_encoder.getRate()
-        );
-
-        Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getYaw());
-
-
-        pose = m_odometry.updateWithTime(elapsedTime, gyroAngle, wheelSpeeds);
-    }
+//    public void updatePose(double elapsedTime) {
+//        MecanumDriveWheelSpeeds wheelSpeeds = new MecanumDriveWheelSpeeds (
+//            front_left_encoder.getRate(), front_right_encoder.getRate(),
+//            back_left_encoder.getRate(), back_right_encoder.getRate()
+//        );
+//
+//        Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getYaw());
+//
+//
+//        pose = m_odometry.updateWithTime(elapsedTime, gyroAngle, wheelSpeeds);
+//    }
 }

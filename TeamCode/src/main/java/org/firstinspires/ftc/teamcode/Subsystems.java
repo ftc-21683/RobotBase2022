@@ -37,7 +37,7 @@ public class Subsystems {
     public AdditiveLogger getLogger() {return  logger;}
 
     public Subsystems(HardwareMap hardwareMap) {
-        gyroscope = new Gyroscope(hardwareMap.get(IMU.class, "imu"));
+        gyroscope = null;
         drivebase = new Drivebase(
             new Motor(hardwareMap, "front_left"),
             new Motor(hardwareMap, "front_right"),
